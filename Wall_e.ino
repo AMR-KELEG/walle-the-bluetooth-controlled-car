@@ -1,7 +1,23 @@
-char blueToothVal;   
-//value sent over via bluetooth
 //Motor a on the Right
 //Motor b on the left
+/*
+  ----------------
+  |              |
+  |              |
+  |              |
+  |Motor   Motor |
+  O  B       A   O
+  ----------------
+
+*/
+/*
+Bluetooth Module Wires:
+Vcc >> brown
+GND >> red
+Tx >> orange
+Rx >> yellow
+*/
+char blueToothVal;   //value sent over via bluetooth
 int E1=2,a1=3,a2=4,E2=7,b1=6,b2=8;
 void setup()
 {
@@ -9,6 +25,9 @@ void setup()
  pinMode(E1,OUTPUT);
  pinMode(a1,OUTPUT);
  pinMode(a2,OUTPUT);
+ pinMode(E2,OUTPUT);
+ pinMode(b1,OUTPUT);
+ pinMode(b2,OUTPUT);
 }
  
  
