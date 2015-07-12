@@ -39,8 +39,8 @@ void loop()
     analogWrite(b1,0);
     digitalWrite(b2,HIGH);
   }
-  else if (blueToothVal=='L')
-  {//if value from bluetooth serial is Left
+  else if (blueToothVal=='R')
+  {//if value from bluetooth serial is Right
     digitalWrite(E1,HIGH);
     analogWrite(a1,0);
     digitalWrite(a2,HIGH);  
@@ -48,8 +48,8 @@ void loop()
     analogWrite(b1,255);
     digitalWrite(b2,LOW);
   }
-  else if (blueToothVal=='R')
-  {//if value from bluetooth serial is Right
+  else if (blueToothVal=='L')
+  {//if value from bluetooth serial is Left
     digitalWrite(E1,HIGH);
     analogWrite(a1,255);
     digitalWrite(a2,LOW);  
