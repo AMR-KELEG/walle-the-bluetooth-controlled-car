@@ -18,7 +18,7 @@ Tx >> orange
 Rx >> yellow
 */
 char blueToothVal;   //value sent over via bluetooth
-int E1=2,a1=3,a2=4,E2=7,b1=6,b2=8;
+int E1=3,a1=2,a2=4,E2=5,b1=6,b2=7;
 void setup()
 {
  Serial.begin(9600); 
@@ -33,94 +33,94 @@ void setup()
  
 void loop()
 {
-  if(Serial.available())
-  Serial.println(char(Serial.read()));
   
   if(Serial.available())
   {//if there is data being recieved
+    Serial.println(char(Serial.read()));
     blueToothVal=Serial.read(); //read it
   }
+  
   if (blueToothVal=='F')
   {//if value from bluetooth serial is Forward
     digitalWrite(E1,HIGH);
-    analogWrite(a1,255);
+    digitalWrite(a1,HIGH);
     digitalWrite(a2,LOW);  
     digitalWrite(E2,HIGH);
-    analogWrite(b1,255);
+    digitalWrite(b1,HIGH);
     digitalWrite(b2,LOW);
   }
   else if (blueToothVal=='B')
   {//if value from bluetooth serial is Back
     digitalWrite(E1,HIGH);
-    analogWrite(a1,0);
+    digitalWrite(a1,LOW);
     digitalWrite(a2,HIGH);  
     digitalWrite(E2,HIGH);
-    analogWrite(b1,0);
+    digitalWrite(b1,LOW);
     digitalWrite(b2,HIGH);
   }
   else if (blueToothVal=='R')
   {//if value from bluetooth serial is Right
     digitalWrite(E1,HIGH);
-    analogWrite(a1,0);
+    digitalWrite(a1,LOW);
     digitalWrite(a2,HIGH);  
     digitalWrite(E2,HIGH);
-    analogWrite(b1,255);
+    digitalWrite(b1,HIGH);
     digitalWrite(b2,LOW);
   }
   else if (blueToothVal=='L')
   {//if value from bluetooth serial is Left
     digitalWrite(E1,HIGH);
-    analogWrite(a1,255);
+    digitalWrite(a1,HIGH);
     digitalWrite(a2,LOW);  
     digitalWrite(E2,HIGH);
-    analogWrite(b1,0);
+    digitalWrite(b1,LOW);
     digitalWrite(b2,HIGH);
   }
   else if (blueToothVal=='I')
   {//if value from bluetooth serial is Forward Right
-    digitalWrite(E1,HIGH);
-    analogWrite(a1,200);
+    analogWrite(E1,200);
+    digitalWrite(a1,HIGH);
     digitalWrite(a2,LOW);  
-    digitalWrite(E2,HIGH);
-    analogWrite(b1,255);
+    analogWrite(E2,255);
+    digitalWrite(b1,HIGH);
     digitalWrite(b2,LOW);
   }
   else if (blueToothVal=='G')
   {//if value from bluetooth serial is Forward Left
-    digitalWrite(E1,HIGH);
-    analogWrite(a1,255);
+    analogWrite(E1,255);
+    digitalWrite(a1,HIGH);
     digitalWrite(a2,LOW);  
-    digitalWrite(E2,HIGH);
-    analogWrite(b1,200);
+    analogWrite(E2,200);
+    digitalWrite(b1,HIGH);
     digitalWrite(b2,LOW);
   }
   else if (blueToothVal=='H')
   {//if value from bluetooth serial is Back Left
-    digitalWrite(E1,HIGH);
-    analogWrite(a1,0);
+    analogWrite(E1,255);
+    digitalWrite(a1,LOW);
     digitalWrite(a2,HIGH);  
-    digitalWrite(E2,HIGH);
-    analogWrite(b1,50);
+    analogWrite(E2,200);
+    digitalWrite(b1,LOW);
     digitalWrite(b2,HIGH);
   }
   else if (blueToothVal=='J')
   {//if value from bluetooth serial is Back Right
-    digitalWrite(E1,HIGH);
-    analogWrite(a1,50);
+    analogWrite(E1,200);
+    digitalWrite(a1,LOW);
     digitalWrite(a2,HIGH);  
-    digitalWrite(E2,HIGH);
-    analogWrite(b1,0);
+    analogWrite(E2,255);
+    digitalWrite(b1,LOW);
     digitalWrite(b2,HIGH);
   }
-    else
-    {
-      digitalWrite(E1,HIGH);
-    analogWrite(a1,255);
+  else if (blueToothVal=='S')
+  {
+    digitalWrite(E1,HIGH);
+    digitalWrite(a1,HIGH);
     digitalWrite(a2,HIGH);  
     digitalWrite(E2,HIGH);
-    analogWrite(b1,255);
+    digitalWrite(b1,HIGH);
     digitalWrite(b2,HIGH);
-    }
+  }
      
  /* else if (blueToothVal=='B')
   {//if value from bluetooth serial is n
@@ -130,5 +130,5 @@ void loop()
     lastValue=blueToothVal;
   }
  */
-  delay(5); 
+  delay(10); 
 }
