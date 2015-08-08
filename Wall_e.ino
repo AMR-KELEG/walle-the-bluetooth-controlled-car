@@ -17,6 +17,15 @@ GND >> red
 Tx >> orange
 Rx >> yellow
 */
+
+#include <NewPing.h>
+
+#define TRIGGER_PIN  12  // Arduino pin tied to trigger pin on the ultrasonic sensor.
+#define ECHO_PIN     11  // Arduino pin tied to echo pin on the ultrasonic sensor.
+#define MAX_DISTANCE 1000 // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm.
+
+NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); // NewPing setup of pins and maximum distance.
+
 char blueToothVal;   //value sent over via bluetooth
 int E1=3,a1=2,a2=4,E2=5,b1=6,b2=7;
 void setup()
@@ -28,92 +37,115 @@ void setup()
  pinMode(E2,OUTPUT);
  pinMode(b1,OUTPUT);
  pinMode(b2,OUTPUT);
+ pinMode(A0,INPUT);
 }
  
  
 void loop()
-{
-  
+{ int sensorValue = analogRead(A0);
+  unsigned int uS = sonar.ping_cm(); // Send ping, get ping time in microseconds (uS).
   if(Serial.available())
   {//if there is data being recieved
     Serial.println(char(Serial.read()));
     blueToothVal=Serial.read(); //read it
   }
-  
-  if (blueToothVal=='F')
-  {//if value from bluetooth serial is Forward
-    digitalWrite(E1,HIGH);
-    digitalWrite(a1,HIGH);
-    digitalWrite(a2,LOW);  
-    digitalWrite(E2,HIGH);
-    digitalWrite(b1,HIGH);
-    digitalWrite(b2,LOW);
+  if (blueToothVal=='S')
+  {
+    Stop();
   }
-  else if (blueToothVal=='B')
-  {//if value from bluetooth serial is Back
-    digitalWrite(E1,HIGH);
-    digitalWrite(a1,LOW);
-    digitalWrite(a2,HIGH);  
-    digitalWrite(E2,HIGH);
-    digitalWrite(b1,LOW);
-    digitalWrite(b2,HIGH);
+  else if (blueToothVal=='F')
+  {//if value from bluetooth serial is Forward
+    if((uS >3 && uS < 10)){
+    Stop();
+    }
+    else{
+    Forward();
+    }
+  }
+  else if (blueToothVal=='B' )
+  {  
+    //if value from bluetooth serial is Back
+    if(sensorValue<=1000)
+    
+    {
+     Stop();
+      }
+      else {Back();}
   }
   else if (blueToothVal=='R')
   {//if value from bluetooth serial is Right
-    digitalWrite(E1,HIGH);
-    digitalWrite(a1,LOW);
-    digitalWrite(a2,HIGH);  
-    digitalWrite(E2,HIGH);
-    digitalWrite(b1,HIGH);
-    digitalWrite(b2,LOW);
+    Right();
   }
   else if (blueToothVal=='L')
   {//if value from bluetooth serial is Left
-    digitalWrite(E1,HIGH);
-    digitalWrite(a1,HIGH);
-    digitalWrite(a2,LOW);  
-    digitalWrite(E2,HIGH);
-    digitalWrite(b1,LOW);
-    digitalWrite(b2,HIGH);
+    Left();
   }
   else if (blueToothVal=='I')
   {//if value from bluetooth serial is Forward Right
-    analogWrite(E1,200);
-    digitalWrite(a1,HIGH);
-    digitalWrite(a2,LOW);  
-    analogWrite(E2,255);
-    digitalWrite(b1,HIGH);
-    digitalWrite(b2,LOW);
+    if((uS >3 && uS < 10)){
+    Stop();
+    }
+    else{
+    ForwardRight();
+    }
   }
   else if (blueToothVal=='G')
   {//if value from bluetooth serial is Forward Left
-    analogWrite(E1,255);
-    digitalWrite(a1,HIGH);
-    digitalWrite(a2,LOW);  
-    analogWrite(E2,200);
-    digitalWrite(b1,HIGH);
-    digitalWrite(b2,LOW);
+    if((uS >3 && uS < 10)){
+    Stop();
+    }
+    else{
+    ForwardLeft();
+    }
   }
   else if (blueToothVal=='H')
   {//if value from bluetooth serial is Back Left
-    analogWrite(E1,255);
-    digitalWrite(a1,LOW);
-    digitalWrite(a2,HIGH);  
-    analogWrite(E2,200);
-    digitalWrite(b1,LOW);
-    digitalWrite(b2,HIGH);
+      if(sensorValue<=1000){
+     Stop();
+      }
+      else 
+    {BackLeft();}
   }
   else if (blueToothVal=='J')
   {//if value from bluetooth serial is Back Right
-    analogWrite(E1,200);
+     if(sensorValue<=1000)
+     {
+     Stop();
+      }
+      else 
+     {BackRight();}
+  } 
+/*
+  Serial.print("Ping: ");
+  Serial.print(uS); // Convert ping time to distance in cm and print result (0 = outside set distance range)
+  Serial.println("cm");*/
+  delay(10); 
+}
+  void Back(){
+    digitalWrite(E1,HIGH);
     digitalWrite(a1,LOW);
     digitalWrite(a2,HIGH);  
-    analogWrite(E2,255);
+    digitalWrite(E2,HIGH);
     digitalWrite(b1,LOW);
     digitalWrite(b2,HIGH);
   }
-  else if (blueToothVal=='S')
-  {
+  void Left(){
+        digitalWrite(E1,HIGH);
+    digitalWrite(a1,HIGH);
+    digitalWrite(a2,LOW);  
+    digitalWrite(E2,HIGH);
+    digitalWrite(b1,LOW);
+    digitalWrite(b2,HIGH);
+  }
+  void Right(){
+        digitalWrite(E1,HIGH);
+    digitalWrite(a1,LOW);
+    digitalWrite(a2,HIGH);  
+    digitalWrite(E2,HIGH);
+    digitalWrite(b1,HIGH);
+    digitalWrite(b2,LOW);
+  }
+  void Stop(){
     digitalWrite(E1,HIGH);
     digitalWrite(a1,HIGH);
     digitalWrite(a2,HIGH);  
@@ -121,14 +153,49 @@ void loop()
     digitalWrite(b1,HIGH);
     digitalWrite(b2,HIGH);
   }
-     
- /* else if (blueToothVal=='B')
-  {//if value from bluetooth serial is n
-    digitalWrite(13,LOW);             //turn off LED
-    if (lastValue!='F')
-      Serial.println(F("LED is off")); //print LED is on
-    lastValue=blueToothVal;
+
+  void Forward(){
+      digitalWrite(E1,HIGH);
+    digitalWrite(a1,HIGH);
+    digitalWrite(a2,LOW);  
+    digitalWrite(E2,HIGH);
+    digitalWrite(b1,HIGH);
+    digitalWrite(b2,LOW);
   }
- */
-  delay(10); 
-}
+
+  void ForwardRight(){
+        analogWrite(E1,200);
+    digitalWrite(a1,HIGH);
+    digitalWrite(a2,LOW);  
+    analogWrite(E2,255);
+    digitalWrite(b1,HIGH);
+    digitalWrite(b2,LOW);
+  }
+
+  void ForwardLeft(){
+    analogWrite(E1,255);
+    digitalWrite(a1,HIGH);
+    digitalWrite(a2,LOW);  
+    analogWrite(E2,200);
+    digitalWrite(b1,HIGH);
+    digitalWrite(b2,LOW);
+  }
+
+  void BackRight(){
+    analogWrite(E1,200);
+    digitalWrite(a1,LOW);
+    digitalWrite(a2,HIGH);  
+    analogWrite(E2,255);
+    digitalWrite(b1,LOW);
+    digitalWrite(b2,HIGH);
+  }
+
+  void BackLeft(){
+    analogWrite(E1,255);
+    digitalWrite(a1,LOW);
+    digitalWrite(a2,HIGH);  
+    analogWrite(E2,200);
+    digitalWrite(b1,LOW);
+    digitalWrite(b2,HIGH);
+  }
+
