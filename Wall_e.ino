@@ -1,3 +1,5 @@
+#include <NewPing.h>
+
 //Motor a on the Right
 //Motor b on the left
 /*
@@ -8,7 +10,6 @@
   |Motor   Motor |
   O  B       A   O
   ----------------
-
 */
 /*
 Bluetooth Module Wires:
@@ -27,7 +28,7 @@ Rx >> yellow
 NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); // NewPing setup of pins and maximum distance.
 
 char blueToothVal;   //value sent over via bluetooth
-int E1=3,a1=2,a2=4,E2=5,b1=6,b2=7;
+int E1=3,a1=2,a2=4,E2=5,b1=6,b2=7,Threshold = 400;
 void setup()
 {
  Serial.begin(9600); 
@@ -39,16 +40,52 @@ void setup()
  pinMode(b2,OUTPUT);
  pinMode(A0,INPUT);
 }
- 
- 
+
 void loop()
-{ int sensorValue = analogRead(A0);
+{ int IRBackSensor = analogRead(A0);
   unsigned int uS = sonar.ping_cm(); // Send ping, get ping time in microseconds (uS).
   if(Serial.available())
   {//if there is data being recieved
-    Serial.println(char(Serial.read()));
+ //   Serial.println(char(Serial.read()));
     blueToothVal=Serial.read(); //read it
   }
+  
+  if(blueToothVal=='W'){
+    while(blueToothVal!='U'){
+    int SumRightSensor=0,SumCenterSensor=0,SumLeftSensor=0;
+    for(int i=0;i<10;i++)
+    {
+      SumRightSensor += analogRead(A1);
+      SumCenterSensor += analogRead(A2);
+      SumLeftSensor += analogRead(A3);
+    }
+    int RightSensor = SumRightSensor/10;
+    int CenterSensor = SumCenterSensor/10;
+    int LeftSensor = SumLeftSensor/10;
+  
+    if (RightSensor - LeftSensor > Threshold){
+      Right();
+    }
+    else if (RightSensor - CenterSensor > Threshold){
+      Right();
+    }
+    else if (LeftSensor - RightSensor > Threshold){
+      Left();
+  
+    }
+    else if (LeftSensor - CenterSensor > Threshold){
+      Left();
+    }
+    else {
+      Forward();
+    }
+      delay(100);
+    blueToothVal=Serial.read();
+    Serial.println(char(Serial.read()));
+    }
+  }
+  
+  else{
   if (blueToothVal=='S')
   {
     Stop();
@@ -65,12 +102,12 @@ void loop()
   else if (blueToothVal=='B' )
   {  
     //if value from bluetooth serial is Back
-    if(sensorValue<=1000)
-    
-    {
+    if(IRBackSensor<=1000){
      Stop();
-      }
-      else {Back();}
+    }
+    else{
+      Back();
+    }
   }
   else if (blueToothVal=='R')
   {//if value from bluetooth serial is Right
@@ -100,21 +137,23 @@ void loop()
   }
   else if (blueToothVal=='H')
   {//if value from bluetooth serial is Back Left
-      if(sensorValue<=1000){
-     Stop();
+      if(IRBackSensor<=1000){
+        Stop();
       }
-      else 
-    {BackLeft();}
+      else{
+        BackLeft();
+      }
   }
   else if (blueToothVal=='J')
   {//if value from bluetooth serial is Back Right
-     if(sensorValue<=1000)
-     {
-     Stop();
-      }
-      else 
-     {BackRight();}
+     if(IRBackSensor<=1000){
+        Stop();
+     }
+     else{
+      BackRight();
+     }
   } 
+  }
 /*
   Serial.print("Ping: ");
   Serial.print(uS); // Convert ping time to distance in cm and print result (0 = outside set distance range)
