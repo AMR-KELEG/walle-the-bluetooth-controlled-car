@@ -28,72 +28,114 @@ Rx >> yellow
 NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); // NewPing setup of pins and maximum distance.
 
 char blueToothVal;   //value sent over via bluetooth
-int E1=3,a1=2,a2=4,E2=5,b1=6,b2=7,Threshold = 400;
+// PINS INIT
+int E1 = 3, a1 = 2, a2 = 4, //Motor 1
+    E2 = 5, b1 = 6, b2 = 7, //Motor 2
+    IRBackSensor = A0, //Infrared Back Sensor
+    Threshold = 400,
+    lightIntensity = A4, ledIntensity = 10;// LDR-LED
+
+int lightVal, ledVoltage, //LDR-LED
+    uS, //ultrasonic
+    SumRightSensor, SumCenterSensor, SumLeftSensor,
+    IRBackVal; //Infrared Back Sensor
 void setup()
 {
- Serial.begin(9600); 
+ Serial.begin(9600);
+ // Motors Pins 
  pinMode(E1,OUTPUT);
  pinMode(a1,OUTPUT);
  pinMode(a2,OUTPUT);
  pinMode(E2,OUTPUT);
  pinMode(b1,OUTPUT);
  pinMode(b2,OUTPUT);
- pinMode(A0,INPUT);
+ // LDR-LED
+ pinMode(lightIntensity,INPUT);
+ pinMode(ledIntensity, OUTPUT);
+ // Infrared Back Sensor
+ pinMode(IRBackSensor,INPUT);
+ // Line Tracking
+ pinMode(A1,INPUT);
+ pinMode(A2,INPUT);
+ pinMode(A3,INPUT);
+ // ultrasonic
+ pinMode(ECHO_PIN , INPUT);
+ pinMode(TRIGGER_PIN , OUTPUT);
 }
 
 void loop()
-{ int IRBackSensor = analogRead(A0);
-  unsigned int uS = sonar.ping_cm(); // Send ping, get ping time in microseconds (uS).
+{
+  //LDR-LED
+  lightVal = analogRead(lightIntensity);
+  ledVoltage = convertVoltage(lightVal);
+  analogWrite(ledIntensity, ledVoltage);
+  Serial.print("Light: ");
+  Serial.println(lightVal);
+  Serial.print("LED: ");
+  Serial.println(ledVoltage);
+
+
+  // Avoid obstacles
+  IRBackVal = analogRead(IRBackSensor);
+  uS = sonar.ping_cm(); // Send ping, get ping time in microseconds (uS).
+  
   if(Serial.available())
-  {//if there is data being recieved
- //   Serial.println(char(Serial.read()));
-    blueToothVal=Serial.read(); //read it
-  }
-  
-  if(blueToothVal=='W'){
-    while(blueToothVal!='U'){
-    int SumRightSensor=0,SumCenterSensor=0,SumLeftSensor=0;
-    for(int i=0;i<10;i++)
-    {
-      SumRightSensor += analogRead(A1);
-      SumCenterSensor += analogRead(A2);
-      SumLeftSensor += analogRead(A3);
-    }
-    int RightSensor = SumRightSensor/10;
-    int CenterSensor = SumCenterSensor/10;
-    int LeftSensor = SumLeftSensor/10;
-  
-    if (RightSensor - LeftSensor > Threshold){
-      Right();
-    }
-    else if (RightSensor - CenterSensor > Threshold){
-      Right();
-    }
-    else if (LeftSensor - RightSensor > Threshold){
-      Left();
-  
-    }
-    else if (LeftSensor - CenterSensor > Threshold){
-      Left();
-    }
-    else {
-      Forward();
-    }
-      delay(100);
+  {
+    //if there is data being recieved
     blueToothVal=Serial.read();
-    Serial.println(char(Serial.read()));
-    }
   }
+
+  // Line Tracking
+  if(blueToothVal=='W')
+  {
+    while(blueToothVal!='U')
+    {
+      SumRightSensor = 0;
+      SumCenterSensor = 0;
+      SumLeftSensor = 0;
+      for(int i=0;i<10;i++)
+      {
+        SumRightSensor += analogRead(A1);
+        SumCenterSensor += analogRead(A2);
+        SumLeftSensor += analogRead(A3);
+      }
+      int RightSensor = SumRightSensor/10;
+      int CenterSensor = SumCenterSensor/10;
+      int LeftSensor = SumLeftSensor/10;
+      if (RightSensor - LeftSensor > Threshold)
+        Right();
+      else if (RightSensor - CenterSensor > Threshold)
+        Right();
+      else if (LeftSensor - RightSensor > Threshold)
+        Left();
+      else if (LeftSensor - CenterSensor > Threshold)
+        Left();
+      else
+        Forward();
+      delay(200);
+      blueToothVal=Serial.read();
+      Serial.println(char(Serial.read()));
+   }
+ }
   
   else{
   if (blueToothVal=='S')
   {
-    Stop();
+    if((uS >3 && uS < 15) && IRBackVal <= 1000)
+      Right();
+    else if (uS >3 && uS < 15)
+      Back();
+    else if (IRBackVal <= 1000 )
+      Forward();
+    else
+      Stop();
   }
   else if (blueToothVal=='F')
-  {//if value from bluetooth serial is Forward
-    if((uS >3 && uS < 10)){
-    Stop();
+  {
+    //if value from bluetooth serial is Forward
+    if((uS >3 && uS < 15))
+    {
+      Stop();
     }
     else{
     Forward();
@@ -102,7 +144,7 @@ void loop()
   else if (blueToothVal=='B' )
   {  
     //if value from bluetooth serial is Back
-    if(IRBackSensor<=1000){
+    if(IRBackVal <= 1000){
      Stop();
     }
     else{
@@ -110,7 +152,8 @@ void loop()
     }
   }
   else if (blueToothVal=='R')
-  {//if value from bluetooth serial is Right
+  {
+    //if value from bluetooth serial is Right
     Right();
   }
   else if (blueToothVal=='L')
@@ -119,7 +162,7 @@ void loop()
   }
   else if (blueToothVal=='I')
   {//if value from bluetooth serial is Forward Right
-    if((uS >3 && uS < 10)){
+    if((uS >3 && uS < 15)){
     Stop();
     }
     else{
@@ -128,7 +171,7 @@ void loop()
   }
   else if (blueToothVal=='G')
   {//if value from bluetooth serial is Forward Left
-    if((uS >3 && uS < 10)){
+    if((uS >3 && uS < 15)){
     Stop();
     }
     else{
@@ -137,7 +180,7 @@ void loop()
   }
   else if (blueToothVal=='H')
   {//if value from bluetooth serial is Back Left
-      if(IRBackSensor<=1000){
+      if(IRBackVal<=1000){
         Stop();
       }
       else{
@@ -146,7 +189,7 @@ void loop()
   }
   else if (blueToothVal=='J')
   {//if value from bluetooth serial is Back Right
-     if(IRBackSensor<=1000){
+     if(IRBackVal<=1000){
         Stop();
      }
      else{
@@ -237,4 +280,19 @@ void loop()
     digitalWrite(b1,LOW);
     digitalWrite(b2,HIGH);
   }
+
+//LDR-LED
+int convertVoltage(int reading)
+{
+  int result = -0.567*reading + 396.67;
+  if(result<=0){
+    return 0;
+  }
+  else if(result>=255){
+    return 255;
+  }
+  else{
+  return result;
+  }
+}
 
